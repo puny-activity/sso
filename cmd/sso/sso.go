@@ -2,12 +2,23 @@ package main
 
 import (
 	"fmt"
-	"sso/pkg/contracts/ssocontract"
+	"sso/config"
+	"sso/internal/app"
+	"sso/pkg/lggr"
 )
 
 func main() {
-	fmt.Println(ssocontract.AuthenticateRequest{
-		Username: "username",
-		Password: "password",
-	})
+	cfg, err := config.Parse()
+	if err != nil {
+		panic(fmt.Errorf("failed to parse config: %w", err))
+	}
+
+	log := lggr.New(cfg.Logger())
+
+	application := app.New(cfg.App(), log)
+	err = application.Start()
+	if err != nil {
+		panic(fmt.Errorf("failed to start application: %w", err))
+	}
+	defer application.Stop()
 }
